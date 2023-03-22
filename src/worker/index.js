@@ -6,7 +6,7 @@ import { magenta } from '../_lib.js'
 import output from '../output/index.js'
 import wtf_plugin_i18n from 'wtf-plugin-i18n'
 
-wtf.extend(wtf_plugin_i18n)
+//wtf.extend(wtf_plugin_i18n)
 
 let { input, outputDir, outputMode, index, workers, namespace, redirects, disambiguation } = workerData
 let methods = JSONfn.parse(workerData.methods)

@@ -1,11 +1,11 @@
 import dip from 'dumpster-dip'
 
-const wiki = `../masters/data/raw/wikipedia/en/enwiki-latest-pages-articles.xml`
+const wiki = `../data/raw/wikipedia/en/enwiki-latest-pages-articles.xml`
 
 const opts = {
   input: wiki,
   // directory for all our new files
-  outputDir: './results', // (default)
+  outputDir: './results/en', // (default)
   // how we should write the results
   outputMode: 'ndjson', // (default)
   // which wikipedia namespaces to handle (null will do all)
@@ -17,7 +17,7 @@ const opts = {
   parse: function (doc) {
     page = {
         "title": doc.title(),
-	"pageID": doc.pageID(),
+	"pageID": parseInt(doc.pageID()),
 	"sections": []
     }
     for (let section of doc.sections()) {
@@ -27,32 +27,40 @@ const opts = {
 	current_section = {
 	    "title": section_title,
 	    "depth": section_depth,
-	    "sentences": []
+	    "paragraphs": []
 	}
 
-	for (let sentence of section.sentences()) { 
-	    let sentence_json = sentence.json();
+	for (let paragraph of section.paragraphs()) {
+	    current_paragraph = []
+	    for (let sentence of paragraph.sentences()) { 
+	        let sentence_json = sentence.json();
 
-	    let links = []
-	    if (sentence_json.links !== undefined) {
-		for (let link of sentence_json.links) {
-		    if (link.type === "internal") {
-			links.push({
-			    "text": link.text,
-		            "title": link.page
-			})
-		    }
-		}
+	        let links = []
+	        if (sentence_json.links !== undefined) {
+	    	    for (let link of sentence_json.links) {
+		        if (link.type === "internal") {
+			    links.push({
+			        "text": link.text,
+		                "title": link.page
+			    })
+		        }
+	    	    }
+	        }
+
+
+	        current_paragraph.push({
+                    "text": sentence_json.text,
+                    "links": links,
+	        });
 	    }
-
-
-	    current_section.sentences.push({
-                "text": sentence_json["text"],
-                "links": links,
-	    });
-	}
 	
-	if (current_section["sentences"].length > 0) {
+	    if (current_paragraph.length > 0) {
+                current_section.paragraphs.push(current_paragraph)
+	    }
+	}
+
+	
+	if (current_section.paragraphs.length > 0) {
 	    page.sections.push(current_section);
 	}
     }
